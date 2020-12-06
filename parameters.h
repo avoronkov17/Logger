@@ -2,7 +2,12 @@
 #define PARAMETERS_H
 
 #include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 #define MAX_REQUEST_STRING_LEN 255
+
 
 #pragma pack(push, 1)
 /* время */
@@ -50,4 +55,7 @@ int8_t Parametrist_update(struct st_parameters *params);
  */
 const char* Parametrist_HTTP_string(void);
 
+#ifdef __cplusplus
+}
+#endif
 #endif // PARAMETERS_H
