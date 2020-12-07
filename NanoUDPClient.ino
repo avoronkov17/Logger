@@ -46,10 +46,10 @@ void emergency(uint8_t errnum, uint8_t blockCount);
 
 void setup (void)
 {
-  Serial.begin(9600);
-  Parametrist_setup(&g_main_parameters);
-  init_ethernet();
-  g_timeMS = millis();
+    Serial.begin(9600);
+    Parametrist_setup(&g_main_parameters);
+    init_ethernet();
+    g_timeMS = millis();
 }
 
 
@@ -62,7 +62,7 @@ void loop (void)
               sizeof(g_main_parameters), srcPort, ether.hisip, dstPort );
     
     //ether.sendUdp(Parametrist_HTTP_string(), strlen(Parametrist_HTTP_string()), srcPort, ether.hisip, dstPort );
-    g_timeMS = millis() + 10;
+    g_timeMS = millis() + 1000;
     }
 }
 
@@ -73,51 +73,51 @@ void loop (void)
 */
 int8_t init_ethernet()
 {
-  if (ether.begin(sizeof (Ethernet::buffer), mymac, SS) == 0) 
-  {
-    emergency(ETHERNET_ERROR, 0);
-    Serial.println(F("ethernet fail"));
-    return ETHERNET_ERROR;
-  }
-  if (!ether.dhcpSetup())
-  {
-    emergency(DHCP_ERROR, 0);
-    Serial.println(F("DHCP fail"));
-    return DHCP_ERROR;
-  }
-
-  if (!ether.dnsLookup(SERVER_IP))
-    Serial.println(F("DNS fail"));
+    if (ether.begin(sizeof (Ethernet::buffer), mymac, SS) == 0) 
+    {
+      emergency(ETHERNET_ERROR, 0);
+      Serial.println(F("ethernet fail"));
+      return ETHERNET_ERROR;
+    }
+    if (!ether.dhcpSetup())
+    {
+      emergency(DHCP_ERROR, 0);
+      Serial.println(F("DHCP fail"));
+      return DHCP_ERROR;
+    }
   
-  //ether.parseIp(ether.hisip, SERVER_IP);
-  ether.printIp("My IP: ", ether.myip);
-  //ether.printIp("GW: ", ether.gwip);
-  //ether.printIp("DNS: ", ether.dnsip);
-  //ether.printIp("SRV ip: ", ether.hisip);
-  //ether.hisport = dstPort;
- 
-  return 0;
+    if (!ether.dnsLookup(SERVER_IP))
+      Serial.println(F("DNS fail"));
+    
+    //ether.parseIp(ether.hisip, SERVER_IP);
+    ether.printIp("My IP: ", ether.myip);
+    //ether.printIp("GW: ", ether.gwip);
+    //ether.printIp("DNS: ", ether.dnsip);
+    //ether.printIp("SRV ip: ", ether.hisip);
+    //ether.hisport = dstPort;
+   
+    return 0;
 }
 
 void emergency(uint8_t errnum, uint8_t blockCount )
 {
-  digitalWrite(LED, LOW);
-  int8_t step = 1;
-  if( blockCount == 0 ) /*чтобы всегда моргала ошибка*/
-  {
-    blockCount = 1;
-    step = 0;
-  }
-  do
-  {
-    for (int8_t i=0; i<errnum; i++)  
+    digitalWrite(LED, LOW);
+    int8_t step = 1;
+    if( blockCount == 0 ) /*чтобы всегда моргала ошибка*/
     {
-      digitalWrite(LED, HIGH);
-      delay(100);
-      digitalWrite(LED, LOW);
-      delay(500);
+      blockCount = 1;
+      step = 0;
     }
-    delay(2000);
-  }
-  while(( blockCount - step) > 0);
+    do
+    {
+      for (int8_t i=0; i<errnum; i++)  
+      {
+        digitalWrite(LED, HIGH);
+        delay(100);
+        digitalWrite(LED, LOW);
+        delay(500);
+      }
+      delay(2000);
+    }
+    while(( blockCount - step) > 0);
 }
