@@ -1,24 +1,3 @@
-
-/* 
-POST /consum HTTP/1.1
-Host: 192.168.7.126:3000
-Content-Type: application/json
-
- {"consumData": 
-     { "dt":"2020-06-28T03:28:00",
-       "Eq":"1",
-       "Reg":"2",
-       "I_A":"1200",
-       "I_B":"1200",
-       "I_C":"1000",
-       "V_A":"1200",
-       "V_B":"0",
-       "V_C":"0"}}
-
-
- sscanf_P(str, (const char *)F("%*s %d-%d-%d %d:%d:%d"), &y, &m, &d, &hh, &mm, &ss)
-  */
-
 #include <EtherCard.h>
 #include "parameters.h"
 
@@ -26,9 +5,19 @@ Content-Type: application/json
 #define LED 13      /* Пин светодиода. */
 #define BUFF_SIZE 340 /* Размер буфера Ethernet. Если меньше 334 - не принимает сервер*/
 
-const char SERVER_IP[] PROGMEM = "192.168.3.51";
-const int srcPort PROGMEM = (1000 + PLAT_NUM);
-const int dstPort PROGMEM = 3000;
+//const char SERVER_IP[] PROGMEM = "192.168.3.101";
+//const char SERVER_IP[] PROGMEM = "172.31.54.147";
+//const char SERVER_IP[] PROGMEM = "172.22.3.191";
+//const char SERVER_IP[] PROGMEM = "retc.vniizht.lan";
+//const char SERVER_DNS[] = "vniizht.lan";
+//const char SERVER_DNS[] = "172.31.54.7";
+//const char SERVER_DNS[] = "172.31.54.147";
+const char SERVER_DNS[] = "0.0.0.0";
+
+//const char SERVER_DNS[] = "192.168.3.101";
+
+//const int srcPort  = (1000 + PLAT_NUM);
+//const int dstPort  = 3000;
 
 /* коды ошибок */
 #define ETHERNET_ERROR 3 // Failed to access Ethernet controller
@@ -37,7 +26,7 @@ const int dstPort PROGMEM = 3000;
 
 uint32_t  g_timeMS = 0;
 struct    st_parameters g_main_parameters; /* Структура с параметрами. В ней всё хранится */
-const byte mymac[] = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x30 };
+const byte mymac[] = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x32 };
 byte Ethernet::buffer[BUFF_SIZE];
 
 /* местные функции */
@@ -58,11 +47,24 @@ void loop (void)
     if (millis() > g_timeMS )
     { 
      Parametrist_update(&g_main_parameters);
+     Serial.println(F("Sending..."));
+
+     int srcPort  = (1000 + PLAT_NUM);
+     int dstPort  = 2000;
+     uint8_t ipDestinationAddress[IP_LEN];
+
+     // 172.22.3.204
+     // 192.168.4.75
+     // 172.31.54.147
+ 
+     ipDestinationAddress[0] =  192;
+     ipDestinationAddress[1] =  168;
+     ipDestinationAddress[2] =  4;
+     ipDestinationAddress[3] =  75;
+  
      ether.sendUdp((const char*)(&g_main_parameters), 
-              sizeof(g_main_parameters), srcPort, ether.hisip, dstPort );
-    
-    //ether.sendUdp(Parametrist_HTTP_string(), strlen(Parametrist_HTTP_string()), srcPort, ether.hisip, dstPort );
-    g_timeMS = millis() + 1000;
+              sizeof(g_main_parameters), srcPort, ipDestinationAddress, dstPort );
+     g_timeMS = millis() + 1000;
     }
 }
 
@@ -73,29 +75,33 @@ void loop (void)
 */
 int8_t init_ethernet()
 {
-    if (ether.begin(sizeof (Ethernet::buffer), mymac, SS) == 0) 
+ 
+    if (ether.begin(sizeof Ethernet::buffer, mymac, SS) == 0) 
     {
       emergency(ETHERNET_ERROR, 0);
       Serial.println(F("ethernet fail"));
       return ETHERNET_ERROR;
     }
+    Serial.println(F("ethernet OK"));
+
     if (!ether.dhcpSetup())
     {
       emergency(DHCP_ERROR, 0);
       Serial.println(F("DHCP fail"));
       return DHCP_ERROR;
     }
-  
-    if (!ether.dnsLookup(SERVER_IP))
-      Serial.println(F("DNS fail"));
+    Serial.println(F("DHCP OK"));
     
-    //ether.parseIp(ether.hisip, SERVER_IP);
-    ether.printIp("My IP: ", ether.myip);
-    //ether.printIp("GW: ", ether.gwip);
-    //ether.printIp("DNS: ", ether.dnsip);
-    //ether.printIp("SRV ip: ", ether.hisip);
-    //ether.hisport = dstPort;
-   
+    ether.printIp("IP:   ", ether.myip); // output IP address to Serial
+    ether.printIp("GW:   ", ether.gwip); // output gateway address to Serial
+    ether.printIp("Mask: ", ether.netmask); // output netmask to Serial
+    ether.printIp("DHCP server: ", ether.dhcpip); // output IP address of the DHCP server
+  
+    if (!ether.dnsLookup(SERVER_DNS))
+      Serial.println(F("DNS fail"));
+    else
+      Serial.println(F("DNS OK"));
+  
     return 0;
 }
 
