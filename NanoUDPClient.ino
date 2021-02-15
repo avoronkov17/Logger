@@ -1,4 +1,5 @@
 #include <EtherCard.h>
+#include <avr/wdt.h>
 #include "parameters.h"
 
 #define PLAT_NUM 1  /* номер платы */
@@ -32,18 +33,70 @@ byte Ethernet::buffer[BUFF_SIZE];
 /* местные функции */
 int8_t init_ethernet();
 void emergency(uint8_t errnum, uint8_t blockCount);
+uint8_t resetFlags __attribute__ ((section(".noinit")));
+
+/*Для работы с WatchDog*/
+uint8_t resetFlagsInit (void) __attribute__ ((naked))
+                       __attribute__ ((used))
+                       __attribute__ ((section(".init0")));
+
+uint8_t resetFlagsInit (void)
+{
+  __asm__ __volatile__ ("sts %0, r2\n" : "=m" (resetFlags) :);
+}
+
+
+void check_watch_dog(void)
+{
+
+  if (resetFlags & (1 << WDRF))
+  {
+     resetFlags &= ~(1 << WDRF);
+     Serial.println(" Watchdog");
+  }
+
+  if (resetFlags & (1 << BORF))
+  {
+     resetFlags &= ~(1 << BORF);
+     Serial.println(" Brownout");
+  }
+  if (resetFlags & (1 << EXTRF))
+  {
+     resetFlags &= ~(1 << EXTRF);
+     Serial.println(" External");
+  }
+  if (resetFlags & (1 << PORF))
+  {
+     resetFlags &= ~(1 << PORF);
+     Serial.println(" PowerOn");
+  }
+  if (resetFlags != 0x00)
+  {
+     Serial.println(" Unknown");
+  }
+  Serial.println("");
+}
 
 void setup (void)
 {
     Serial.begin(9600);
+    check_watch_dog();
     Parametrist_setup(&g_main_parameters);
-    init_ethernet();
+    Serial.println(F("initializing ethernet..."));
+    if ( init_ethernet() != 0 )
+    {   
+        Serial.println(F("Reboot after 2 seconsd"));
+        wdt_enable(WDTO_2S);
+        delay(4000);
+    }
     g_timeMS = millis();
+    wdt_enable(WDTO_4S);
 }
 
 
 void loop (void)
-{ 
+{   
+    wdt_reset();
     if (millis() > g_timeMS )
     { 
      Parametrist_update(&g_main_parameters);
@@ -57,25 +110,22 @@ void loop (void)
      // 192.168.4.75
      // 172.31.54.147
  
-     ipDestinationAddress[0] =  192;
-     ipDestinationAddress[1] =  168;
-     ipDestinationAddress[2] =  4;
-     ipDestinationAddress[3] =  75;
-  
+     ipDestinationAddress[0] =  172;
+     ipDestinationAddress[1] =  31;
+     ipDestinationAddress[2] =  54;
+     ipDestinationAddress[3] =  147;
+      
      ether.sendUdp((const char*)(&g_main_parameters), 
               sizeof(g_main_parameters), srcPort, ipDestinationAddress, dstPort );
      g_timeMS = millis() + 1000;
     }
 }
 
-
-
 /*инициализация сетевой карточки. 
  * Возвращает 0, в случае успешной инициализации , или код ошибки.
 */
 int8_t init_ethernet()
 {
- 
     if (ether.begin(sizeof Ethernet::buffer, mymac, SS) == 0) 
     {
       emergency(ETHERNET_ERROR, 0);
