@@ -99,7 +99,6 @@ void loop (void)
           //arp-request is send out first and beginPacket succeeds as soon
           //the arp-response is received.
           success = udp.beginPacket(IPAddress(SERVER_IP), PORT_DST);
-          Serial.println(success ? F("OK") : F("Fail"));
         }
       while (!success && ((long)(millis() - WAIT_SEND ))<0);
       if (!success )
@@ -112,7 +111,7 @@ void loop (void)
       success = udp.endPacket();
       if (!success)
          goto stop;
-      //Serial.println(success ? F("success") : F("failed"));
+
       success = 1;
       stop:
       if (!success)
