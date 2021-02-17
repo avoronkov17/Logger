@@ -42,7 +42,7 @@ int8_t Parametrist_update(struct  st_parameters *params)
   params->i_c = analogRead(A4);
   params->v_a = analogRead(A7);
   params->v_b = 0;
-  params->v_c = -1; /*как бы, не удалось получить (имитация)*/
+  params->v_c = 0; /*как бы, не удалось получить (имитация)*/
 
   #ifdef WITH_STRING
   m_make_string(params);
