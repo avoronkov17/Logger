@@ -1,21 +1,15 @@
 #include <UIPEthernet.h>
 #include <avr/wdt.h>
+#include "settings.h"
+
 #include "parameters.h"
 
-#define PLAT_NUM 1  /* Номер платы */
 #define LED 13      /* Пин светодиода */
+#define ETHERNET_ERROR 3  /* Не удалось инициализировать Ethernet */
+#define WAIT_SEND      5000 /* Ожидание отправки дейтаграммы */
+
 
 EthernetUDP udp;
-
-//#define SERVER_IP 192,168,3,51   /* IP Адрес назначения */
-#define SERVER_IP 172,31,54,147   /* IP Адрес назначения */
-//#define PORT_SRC  (1000 + PLAT_NUM) /* Порт отправки */
-#define PORT_DST  2000              /* Порт назначения */
-
-/* коды ошибок */
-#define ETHERNET_ERROR 3  /* Не удалось инициализировать Ethernet */
-#define SEND_DELAY     1  /* Через какое время повторять отправку */
-#define WAIT_SEND      5000 /* Ожидание отправки дейтаграммы */
 
 uint32_t   g_timeMS = 0;
 struct     st_parameters g_main_parameters; /* Структура с параметрами. В ней всё хранится */
@@ -65,7 +59,6 @@ void check_watch_dog(void)
   {
      Serial.println(F("Unknown"));
   }
-  //Serial.println("");
 }
 
 void setup (void)
