@@ -12,7 +12,7 @@
 #define PORT_DST  2000              /* Порт назначения */
 
 //#define PORT_SRC  (1000 + PLAT_NUM) /* Порт отправки. Пока не нужно*/
-#define SEND_DELAY     1000  /* Через какое время повторять отправку */
+#define SEND_DELAY     (10 * 1000)  /* Через какое время повторять отправку (миллисек.) */
 
 
 #endif // REGISTRATOR_SETTINGS_H
