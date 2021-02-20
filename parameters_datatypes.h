@@ -3,8 +3,6 @@
 
 #include <stdint.h>
 
-//#define WITH_STRING
-
 #ifdef __cplusplus
 extern "C" {
 #endif

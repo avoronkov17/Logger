@@ -3,8 +3,8 @@
 #include <stdarg.h>
 #include "pins_arduino.h"
 
-#ifdef WITH_STRING
-static int m_add_to_string(char* stringPtr, char *format, ...)
+
+int m_add_to_string(char* stringPtr, char *format, ...)
 {
   va_list ptr;
   va_start(ptr, format);
@@ -12,7 +12,7 @@ static int m_add_to_string(char* stringPtr, char *format, ...)
   va_end(ptr);
   return (strlen(stringPtr));
 }
-#endif
+
 
 
 #ifdef WITH_STRING

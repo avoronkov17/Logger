@@ -1,20 +1,26 @@
 #include <UIPEthernet.h>
+//#include <SPI.h>
+//#include <Ethernet.h>
 #include <avr/wdt.h>
 #include "settings.h"
 
 #include "parameters.h"
 
 #define LED 13      /* Пин светодиода */
+
+#define LINK_OFF 1
+#define ERR_LINK 2
 #define ETHERNET_ERROR 3  /* Не удалось инициализировать Ethernet */
 #define WAIT_SEND      5000 /* Ожидание отправки дейтаграммы */
 
-
+//UIPEthernetClass ddd;
 EthernetUDP udp;
 
 uint32_t   g_timeMS = 0;
 struct     st_parameters g_main_parameters; /* Структура с параметрами. В ней всё хранится */
 const byte mymac[] PROGMEM = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x32 };
 
+char stringWithParams[128];
 /**** местные функции ****/
 int8_t init_ethernet(void);
 void emergency(uint8_t errnum, uint8_t blockCount);
@@ -66,14 +72,16 @@ void setup (void)
     Serial.begin(9600);
     check_watch_dog();
     Parametrist_setup(&g_main_parameters);
-    Serial.println(F("Init ethernet..."));
-    if ( init_ethernet() != 0 )
+    Serial.println(F("Wait ether ..."));
+    int err = 0;
+    if ( (err = init_ethernet()) != 0 )
     {   
-        Serial.println(F("Ethernet Fail. Reboot after 2 sec..."));
+        Serial.println(err);
+        Serial.println(F("Fail. Reboot after 2 sec..."));
         wdt_enable(WDTO_2S);
         delay(4000);
     }
-    Serial.println(F("Ethernet OK"));
+    Serial.println(F("OK"));
     g_timeMS = millis();
     wdt_enable(WDTO_4S);
 }
@@ -85,7 +93,13 @@ void loop (void)
     if (millis() > g_timeMS )
     { 
      Parametrist_update(&g_main_parameters);
-     
+     /*m_add_to_string(stringWithParams, "%d,%d,%d,%d,%d,%d,%d,%d\n",
+                     g_main_parameters.is_eq, g_main_parameters.is_reg,
+                     g_main_parameters.i_a, g_main_parameters.i_b, 
+                     g_main_parameters.i_c,
+                     g_main_parameters.v_a, g_main_parameters.v_b,
+                     g_main_parameters.v_c);*/
+
      do
         {
           //beginPacket fails if remote ethaddr is unknown. In this case an
@@ -119,7 +133,12 @@ void loop (void)
  * Возвращает 0, в случае успешной инициализации , или код ошибки.
 */
 int8_t init_ethernet(void)
-{ 
+{   
+   //if ( Ethernet.linkStatus() == Unknown)
+   //    return ERR_LINK;
+   //if ( Ethernet.linkStatus() == LinkOFF)
+   // return LINK_OFF;
+
     if (Ethernet.begin( mymac) == 0) 
     {
       emergency(ETHERNET_ERROR, 0);

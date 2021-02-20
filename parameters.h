@@ -26,6 +26,8 @@ const char* Parametrist_HTTP_string(void);
 
 #endif
 
+int m_add_to_string(char* stringPtr, char *format, ...);
+
 #ifdef __cplusplus
 }
 #endif
