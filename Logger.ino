@@ -1,6 +1,4 @@
 #include <UIPEthernet.h>
-//#include <SPI.h>
-//#include <Ethernet.h>
 #include <avr/wdt.h>
 #include "settings.h"
 
