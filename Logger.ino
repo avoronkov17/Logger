@@ -13,11 +13,10 @@
 #define ETHERNET_ERROR 3  /* Не удалось инициализировать Ethernet */
 #define WAIT_SEND      5000 /* Ожидание отправки дейтаграммы */
 
-//UIPEthernetClass ddd;
 EthernetUDP udp;
 
 uint32_t   g_timeMS = 0;
-struct     st_parameters g_main_parameters; /* Структура с параметрами. В ней всё хранится */
+struct     st_parameters g_logger_data; /* Структура с параметрами. В ней всё хранится */
 const byte mymac[] PROGMEM = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x32 };
 
 char stringWithParams[128];
@@ -70,9 +69,10 @@ void check_watch_dog(void)
 void setup (void)
 {
     Serial.begin(9600);
+    pinMode(LED, OUTPUT);
     check_watch_dog();
-    Parametrist_setup(&g_main_parameters);
-    Serial.println(F("Wait ether ..."));
+    Parametrist_setup(&g_logger_data);
+    Serial.println(F("Wait ether..."));
     int err = 0;
     if ( (err = init_ethernet()) != 0 )
     {   
@@ -92,13 +92,15 @@ void loop (void)
     int success;
     if (millis() > g_timeMS )
     { 
-     Parametrist_update(&g_main_parameters);
-     /*m_add_to_string(stringWithParams, "%d,%d,%d,%d,%d,%d,%d,%d\n",
-                     g_main_parameters.is_eq, g_main_parameters.is_reg,
-                     g_main_parameters.i_a, g_main_parameters.i_b, 
-                     g_main_parameters.i_c,
-                     g_main_parameters.v_a, g_main_parameters.v_b,
-                     g_main_parameters.v_c);*/
+     Parametrist_update(&g_logger_data);
+     // Формат (параметры разделены запятой): номер_платы,eq,reg,токи,напряжения
+     m_add_to_string(stringWithParams, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+                     PLAT_NUM,
+                     g_logger_data.is_eq, g_logger_data.is_reg,
+                     g_logger_data.i_a, g_logger_data.i_b, 
+                     g_logger_data.i_c,
+                     g_logger_data.v_a, g_logger_data.v_b,
+                     g_logger_data.v_c);
 
      do
         {
@@ -112,7 +114,8 @@ void loop (void)
         goto stop;
 
       Serial.println(F("Sending..."));
-      success = udp.write((const char*)(&g_main_parameters), sizeof(g_main_parameters));
+      //success = udp.write((const char*)(&g_logger_data), sizeof(g_logger_data));
+      success = udp.write(stringWithParams, strlen(stringWithParams));
       if (!success )
         goto stop;
       success = udp.endPacket();
@@ -134,14 +137,15 @@ void loop (void)
 */
 int8_t init_ethernet(void)
 {   
-   //if ( Ethernet.linkStatus() == Unknown)
-   //    return ERR_LINK;
-   //if ( Ethernet.linkStatus() == LinkOFF)
-   // return LINK_OFF;
+   /*if ( Ethernet.linkStatus() == Unknown)
+       return ERR_LINK;
+   
+   if ( Ethernet.linkStatus() == LinkOFF)
+    return LINK_OFF;*/
 
     if (Ethernet.begin( mymac) == 0) 
     {
-      emergency(ETHERNET_ERROR, 0);
+      emergency(ETHERNET_ERROR, 1);
       return ETHERNET_ERROR;
     }
     return 0;

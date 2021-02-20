@@ -13,8 +13,6 @@ int m_add_to_string(char* stringPtr, char *format, ...)
   return (strlen(stringPtr));
 }
 
-
-
 #ifdef WITH_STRING
 #define MAX_REQUEST_STRING_LEN 255
 static char m_buffer_for_string [MAX_REQUEST_STRING_LEN];
