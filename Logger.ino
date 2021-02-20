@@ -137,12 +137,6 @@ void loop (void)
 */
 int8_t init_ethernet(void)
 {   
-   /*if ( Ethernet.linkStatus() == Unknown)
-       return ERR_LINK;
-   
-   if ( Ethernet.linkStatus() == LinkOFF)
-    return LINK_OFF;*/
-
     if (Ethernet.begin( mymac) == 0) 
     {
       emergency(ETHERNET_ERROR, 1);
