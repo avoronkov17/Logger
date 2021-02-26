@@ -18,7 +18,7 @@ int32_t    g_serverNotAnswer = 0; /*сколько сервер нам не от
 uint32_t   g_timeMS = 0;
 bool       g_mustReadReply = false;
 struct     st_parameters g_logger_data; /* Структура с параметрами. В ней всё хранится */
-const byte mymac[] PROGMEM = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x32 };
+const byte mymac[] PROGMEM = { 0x74, 0x69, 0x69, 0x2D, 0x30, 0x34 };
 
 char stringWithParams[64];
 
@@ -41,7 +41,6 @@ void setup (void)
     Serial.begin(9600);
     pinMode(LED, OUTPUT);
     check_watch_dog();
-   // ERROR_RESTART(5, "Test Error");
     
     Parametrist_setup(&g_logger_data);
     Serial.println(F("Wait ether..."));
@@ -122,18 +121,25 @@ void loop (void)
     }
 }
 
-/*
+/*Ethernet.begin(mac,IPAddress(192,168,0,6));
  * Инициализация сетевой карточки. 
  * Возвращает 0, в случае успешной инициализации , или код ошибки.
 */
 int8_t init_ethernet(void)
-{   
+{    
+    //Ethernet.begin( mymac, IPAddress(172,31,54,254));
     if (Ethernet.begin( mymac) == 0) 
     {
       emergency(ETHERNET_ERROR, 1);
       return ETHERNET_ERROR;
     }
-    return 0;
+   //Serial.print("IP: ");
+   Serial.println(IpAddress2String(Ethernet.localIP()));
+   //Serial.print("Mask: ");
+   Serial.println(IpAddress2String(Ethernet.subnetMask()));
+   //Serial.print("Gateway: ");
+   Serial.println(IpAddress2String(Ethernet.gatewayIP()));
+  return 0;
 }
 
 
