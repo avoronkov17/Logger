@@ -1,6 +1,8 @@
 #ifndef SHARED_CODE_H
 #define SHARED_CODE_H 
 
+#include <UIPEthernet.h>
+
 #define LED 13      /* Пин светодиода */
 
 
@@ -18,5 +20,7 @@ unsigned char TestBit(const unsigned char *array,  unsigned char k );
 
 /*мигание светодиода с целью показания ошибок */
 void emergency(uint8_t errnum, int8_t blockCount );
+
+String IpAddress2String(const IPAddress& ipAddress);
 
 #endif // SHARED_CODE_H 
