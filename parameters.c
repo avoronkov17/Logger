@@ -1,5 +1,5 @@
 #include "parameters.h"
-
+#include "settings.h"
 #include <stdarg.h>
 #include "pins_arduino.h"
 
@@ -27,8 +27,8 @@ static void m_make_string(const struct st_parameters *params);
 
 void Parametrist_setup(struct  st_parameters *params)
 {
-  params->is_eq = 2;
-  params->is_reg = 5;
+  params->is_eq = EQUIPMENT;
+  params->is_reg = REG_NUM;
   Parametrist_update(params);
 }
 
